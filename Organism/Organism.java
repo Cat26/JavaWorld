@@ -1,8 +1,12 @@
 package Organism;
 import Position.Position;
 import World.World;
+import Action.*;
 
-public class Organism{
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class Organism{
     private Position position;
     private World world;
     private Integer power;
@@ -10,6 +14,7 @@ public class Organism{
     private Integer liveLength;
     private Integer powerToReproduce;
     private String sign;
+    private Integer foodChain;
 
 
     public Integer getPower() {
@@ -67,6 +72,65 @@ public class Organism{
     public void setWorld(World world) {
         this.world = world;
     }
+
+    public Integer getFoodChain() {
+        return foodChain;
+    }
+
+    public void setFoodChain(Integer foodChain) {
+        this.foodChain = foodChain;
+    }
+
+//    public List<Action> consequences(Organism atackingOrganism){
+//        List<Action> results = new ArrayList<Action>();
+//        if(this.getPower() > atackingOrganism.getPower()){
+//           results.add(new Action(ActionEnum.getAction(ActionEnum.A_REMOVE), new Position(-1, -1), 0, atackingOrganism));
+//        }
+//        else{
+//            results.add(new Action(ActionEnum.getAction(ActionEnum.A_REMOVE), new Position(-1, -1), 0, this));
+//        }
+//        return results;
+//    }
+
+    public List<Action> consequences(Organism atackingOrganism){
+        List<Action> results = new ArrayList<Action>();
+        if(this.getFoodChain() > atackingOrganism.getFoodChain()){
+            results.add(new Action(ActionEnum.getAction(ActionEnum.A_REMOVE), new Position(-1, -1), 0, atackingOrganism));
+            if ((this.getFoodChain() - atackingOrganism.getFoodChain()) == 1){this.setPower(this.getPower() + 2);}
+            else{
+                this.setPower(this.getPower() - 1);
+                System.out.print(this.getClass().getSimpleName() + " get sick by eating " + atackingOrganism.getClass().getSimpleName() + "  ");
+            }
+        }
+        else if (this.getFoodChain() < atackingOrganism.getFoodChain()){
+            results.add(new Action(ActionEnum.getAction(ActionEnum.A_REMOVE), new Position(-1, -1), 0, this));
+            if ((atackingOrganism.getFoodChain() - this.getFoodChain()) == 1){atackingOrganism.setPower(atackingOrganism.getPower() + 2);}
+            else{
+                atackingOrganism.setPower(atackingOrganism.getPower() - 1);
+                System.out.print(atackingOrganism.getClass().getSimpleName() + " get sick by eating " + this.getClass().getSimpleName() + "  ");
+            }
+        }
+
+        else{
+            atackingOrganism.move();
+        }
+        return results;
+    }
+
+    public boolean ifReproduce(){
+        boolean result = false;
+
+        if(this.getPower() >= this.getPowerToReproduce()){
+            result = true;
+        }
+        return result;
+    }
+
+    public abstract Organism clone();
+    public abstract List<Action> move();
+    public abstract List<Action> action();
+    public abstract void initParams();
+
 
     @Override
     public String toString() {
